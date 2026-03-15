@@ -1,5 +1,6 @@
 "use client";
 
+import AudioController from "@/components/AudioController";
 import { useRef, useState } from "react";
 
 export default function Home() {
@@ -22,6 +23,10 @@ export default function Home() {
       <h1>Mel Spectrogram</h1>
       <h1>Midi Visualizer</h1>
       <h1>Audio Controller</h1>
+
+      <div>
+        <AudioController></AudioController>
+      </div>
 
       <div className="flex gap-4 mt-4">
         <input
