@@ -189,13 +189,18 @@ export default function Home() {
         <div>
           <h1 className="mb-4 text-2xl font-bold">Midi Visualizer</h1>
           {result?.midi ? (
-            <a
-              href={result.midi}
-              download="transcription.mid"
-              className="inline-block px-4 py-2 font-semibold text-white transition-colors bg-green-500 rounded hover:bg-green-600"
-            >
-              Download MIDI
-            </a>
+            <div>
+              <midi-player
+                src={result.midi}
+                sound-font
+                visualizer="#midi-visualizer"
+              ></midi-player>
+              <midi-visualizer
+                src={result.midi}
+                id="midi-visualizer"
+                type="piano-roll"
+              ></midi-visualizer>
+            </div>
           ) : (
             <div className="flex items-center justify-center w-full h-64 rounded max-w-3xl bg-zinc-200 dark:bg-zinc-800 text-zinc-500">
               No MIDI generated yet.
