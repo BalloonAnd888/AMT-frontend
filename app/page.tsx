@@ -2,18 +2,61 @@
 
 import AudioPlayerController from "@/components/AudioPlayerController";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDown } from "lucide-react";
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+
+type ModelOption = {
+  value: string;
+  label: string;
+};
 
 export default function Home() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [isTranscribing, setIsTranscribing] = useState(false);
+  const [models, setModels] = useState<ModelOption[]>([]);
+  const [selectedModel, setSelectedModel] = useState<string>("default");
   const [result, setResult] = useState<{
     spectrogram: string;
     midi: string;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchModels = async () => {
+      try {
+        const response = await fetch("/api/models");
+        if (response.ok) {
+          const data = await response.json();
+          const modelsList: Array<{ value: string; label: string } | string> =
+            Array.isArray(data) ? data : data.models || [];
+
+          const normalizedModels = modelsList.map((m) =>
+            typeof m === "string"
+              ? { value: m, label: m }
+              : { value: m.value, label: m.label },
+          );
+
+          setModels(normalizedModels);
+          if (normalizedModels.length > 0) {
+            setSelectedModel(normalizedModels[0].value);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch models:", err);
+      }
+    };
+
+    fetchModels();
+  }, []);
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
@@ -38,7 +81,7 @@ export default function Home() {
     try {
       const formData = new FormData();
       formData.append("file", audioFile);
-      formData.append("model", "default"); // Pass a model identifier required by your backend
+      formData.append("model", selectedModel);
 
       const response = await fetch("/api/transcribe", {
         method: "POST",
@@ -62,6 +105,9 @@ export default function Home() {
       setIsTranscribing(false);
     }
   };
+
+  const selectedModelLabel =
+    models.find((m) => m.value === selectedModel)?.label ?? selectedModel;
 
   return (
     <div className="flex flex-col gap-6 p-8 min-h-screen bg-zinc-50 dark:bg-zinc-950">
@@ -87,11 +133,34 @@ export default function Home() {
       {audioFile && (
         <div className="flex items-center gap-4">
           <p className="text-sm text-gray-600">Selected: {audioFile.name}</p>
+
           <Button onClick={handleTranscribe} disabled={isTranscribing}>
             {isTranscribing ? "Transcribing..." : "Transcribe"}
           </Button>
         </div>
       )}
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button className="flex items-center gap-2 px-4 py-2 font-semibold text-gray-800 bg-white border border-gray-300 rounded hover:bg-gray-100 dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700 dark:hover:bg-zinc-700">
+            Model: {selectedModelLabel} <ChevronDown className="w-4 h-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56">
+          <DropdownMenuRadioGroup
+            value={selectedModel}
+            onValueChange={setSelectedModel}
+          >
+            {models.map((model) => {
+              return (
+                <DropdownMenuRadioItem key={model.value} value={model.value}>
+                  {model.label}
+                </DropdownMenuRadioItem>
+              );
+            })}
+          </DropdownMenuRadioGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       {error && <p className="font-medium text-red-500">{error}</p>}
 
