@@ -199,6 +199,7 @@ export default function Home() {
                 src={result.midi}
                 id="midi-visualizer"
                 type="piano-roll"
+                config={{ noteRGB: "255, 0, 0" }}
               ></midi-visualizer>
             </div>
           ) : (

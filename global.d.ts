@@ -2,6 +2,16 @@ import React from "react";
 
 declare module "*.css";
 
+interface VisualizerConfig {
+  noteHeight?: number;
+  noteSpacing?: number;
+  pixelsPerTimeStep?: number;
+  noteRGB?: string;
+  activeNoteRGB?: string;
+  minPitch?: number;
+  maxPitch?: number;
+}
+
 declare module "react" {
   namespace JSX {
     interface IntrinsicElements {
@@ -20,6 +30,7 @@ declare module "react" {
         src?: string;
         type?: "piano-roll" | "waterfall" | "staff";
         id?: string;
+        config?: VisualizerConfig;
       };
     }
   }
